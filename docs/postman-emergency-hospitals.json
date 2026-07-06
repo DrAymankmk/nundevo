@@ -1,0 +1,103 @@
+{
+  "info": {
+    "_postman_id": "b2b4d5bf-6c29-4d60-b7a9-8a36f2f7a9e0",
+    "name": "Takafol Jood - Emergency Hospitals",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/Other/TakafolJoodNew/public"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Emergency Hospitals - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "lang",
+            "value": "ar"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{jwt_token}}",
+            "description": "Optional. Used only to fallback to user lat/lng if lat/lng query params are not sent."
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/emergency-hospitals",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "user",
+            "emergency-hospitals"
+          ]
+        },
+        "description": "Returns active emergency hospitals. If lat and lng are sent, results are sorted by nearest hospitals."
+      }
+    },
+    {
+      "name": "Emergency Hospitals - Search And Filter",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "lang",
+            "value": "ar"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user/emergency-hospitals?q=مستشفى&city_id=1&region_id=1&lat=21.485811&lng=39.192505&radius=50",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "user",
+            "emergency-hospitals"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "مستشفى",
+              "description": "Search Arabic or English hospital name."
+            },
+            {
+              "key": "city_id",
+              "value": "1"
+            },
+            {
+              "key": "region_id",
+              "value": "1"
+            },
+            {
+              "key": "lat",
+              "value": "21.485811"
+            },
+            {
+              "key": "lng",
+              "value": "39.192505"
+            },
+            {
+              "key": "radius",
+              "value": "50",
+              "description": "Distance in kilometers."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
