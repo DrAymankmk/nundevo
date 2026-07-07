@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(awk '/^@media only screen and \\\\\\(max-width: 991\\\\.98px\\\\\\)/,/^@media only screen and \\\\\\(max-width: 767\\\\.98px\\\\\\)|^@media/' \"C:\\\\xampp\\\\htdocs\\\\Other\\\\TakafolJoodNew\\\\public\\\\assets\\\\css\\\\style.css\")"
-    ]
-  }
-}
