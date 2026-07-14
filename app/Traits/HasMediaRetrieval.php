@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Support\Cms\CmsGalleryMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 trait HasMediaRetrieval
@@ -33,7 +34,10 @@ trait HasMediaRetrieval
                 ->first();
             
             if ($media) {
-                return $media->getUrl();
+                $url = CmsGalleryMedia::accessibleUrl($media);
+                if ($url !== null) {
+                    return $url;
+                }
             }
         }
         
@@ -44,7 +48,10 @@ trait HasMediaRetrieval
             ->first();
         
         if ($media) {
-            return $media->getUrl();
+            $url = CmsGalleryMedia::accessibleUrl($media);
+            if ($url !== null) {
+                return $url;
+            }
         }
         
         // Try to find any collection matching the pattern (e.g., images_*)
@@ -52,10 +59,13 @@ trait HasMediaRetrieval
             $media = Media::where('model_type', $modelClass)
                 ->where('model_id', $this->id)
                 ->where('collection_name', 'like', "{$collectionName}_%")
-                ->first();
-            
-            if ($media) {
-                return $media->getUrl();
+                ->get();
+
+            foreach ($media as $candidate) {
+                $url = CmsGalleryMedia::accessibleUrl($candidate);
+                if ($url !== null) {
+                    return $url;
+                }
             }
         }
         
@@ -114,5 +124,12 @@ trait HasMediaRetrieval
         }
         
         return null;
+    }
+
+    public function getFirstAccessibleMediaUrl(string $collectionName): ?string
+    {
+        $media = $this->getFirstMedia($collectionName);
+
+        return $media ? CmsGalleryMedia::accessibleUrl($media) : null;
     }
 }

@@ -176,7 +176,7 @@
                                     fetch('{{ route("cms.media.index") }}/' + mediaId, {
                                         method: 'DELETE',
                                         headers: {
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                             'Accept': 'application/json'
                                         }
                                     })

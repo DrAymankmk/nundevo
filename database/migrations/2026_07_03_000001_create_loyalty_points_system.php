@@ -9,6 +9,43 @@ class CreateLoyaltyPointsSystem extends Migration
 {
     public function up()
     {
+        $this->createLoyaltyPointRulesTable();
+        $this->createLoyaltyPointTransactionsTable();
+        $this->createLoyaltyRewardCouponsTable();
+        $this->createLoyaltyCouponRedemptionsTable();
+        $this->createLoyaltyShareLogsTable();
+        $this->addClinicsColumns();
+        $this->seedLoyaltyPointRules();
+        $this->purgeOrphanedUserReferences();
+        $this->addForeignKeys();
+    }
+
+    public function down()
+    {
+        $this->dropForeignKeys();
+
+        Schema::table('clinics', function (Blueprint $table) {
+            if (Schema::hasColumn('clinics', 'points_category')) {
+                $table->dropColumn('points_category');
+            }
+            if (Schema::hasColumn('clinics', 'points_enabled')) {
+                $table->dropColumn('points_enabled');
+            }
+        });
+
+        Schema::dropIfExists('loyalty_share_logs');
+        Schema::dropIfExists('loyalty_coupon_redemptions');
+        Schema::dropIfExists('loyalty_reward_coupons');
+        Schema::dropIfExists('loyalty_point_transactions');
+        Schema::dropIfExists('loyalty_point_rules');
+    }
+
+    private function createLoyaltyPointRulesTable(): void
+    {
+        if (Schema::hasTable('loyalty_point_rules')) {
+            return;
+        }
+
         Schema::create('loyalty_point_rules', function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique();
@@ -21,6 +58,13 @@ class CreateLoyaltyPointsSystem extends Migration
             $table->boolean('status')->default(true);
             $table->timestamps();
         });
+    }
+
+    private function createLoyaltyPointTransactionsTable(): void
+    {
+        if (Schema::hasTable('loyalty_point_transactions')) {
+            return;
+        }
 
         Schema::create('loyalty_point_transactions', function (Blueprint $table) {
             $table->id();
@@ -39,12 +83,16 @@ class CreateLoyaltyPointsSystem extends Migration
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('clinic_id')->references('id')->on('clinics')->nullOnDelete();
-            $table->foreign('reservation_id')->references('id')->on('reservations')->nullOnDelete();
             $table->index(['user_id', 'status', 'expires_at']);
             $table->index(['source_type', 'source_id']);
         });
+    }
+
+    private function createLoyaltyRewardCouponsTable(): void
+    {
+        if (Schema::hasTable('loyalty_reward_coupons')) {
+            return;
+        }
 
         Schema::create('loyalty_reward_coupons', function (Blueprint $table) {
             $table->id();
@@ -53,18 +101,29 @@ class CreateLoyaltyPointsSystem extends Migration
             $table->string('service_name_en')->nullable();
             $table->text('details_ar')->nullable();
             $table->text('details_en')->nullable();
+            // price before discount
+            $table->decimal('price_before_discount', 10, 2)->default(0);
             $table->enum('discount_type', ['percentage', 'fixed'])->default('percentage');
             $table->decimal('discount_value', 10, 2)->default(0);
-            $table->unsignedInteger('points_required');
+            // price after discount
+            $table->decimal('price_after_discount', 10, 2)->default(0);
+            // usage limit
+            $table->unsignedInteger('usage_limit')->default(0);
             $table->date('expires_at');
             $table->json('branch_ids')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('clinic_id')->references('id')->on('clinics')->cascadeOnDelete();
             $table->index(['clinic_id', 'status', 'expires_at']);
         });
+    }
+
+    private function createLoyaltyCouponRedemptionsTable(): void
+    {
+        if (Schema::hasTable('loyalty_coupon_redemptions')) {
+            return;
+        }
 
         Schema::create('loyalty_coupon_redemptions', function (Blueprint $table) {
             $table->id();
@@ -80,12 +139,15 @@ class CreateLoyaltyPointsSystem extends Migration
             $table->unsignedBigInteger('confirmed_by')->nullable();
             $table->timestamps();
 
-            $table->foreign('coupon_id')->references('id')->on('loyalty_reward_coupons')->cascadeOnDelete();
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('clinic_id')->references('id')->on('clinics')->cascadeOnDelete();
-            $table->foreign('confirmed_by')->references('id')->on('clinics')->nullOnDelete();
             $table->index(['clinic_id', 'status']);
         });
+    }
+
+    private function createLoyaltyShareLogsTable(): void
+    {
+        if (Schema::hasTable('loyalty_share_logs')) {
+            return;
+        }
 
         Schema::create('loyalty_share_logs', function (Blueprint $table) {
             $table->id();
@@ -95,11 +157,12 @@ class CreateLoyaltyPointsSystem extends Migration
             $table->unsignedBigInteger('shareable_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('clinic_id')->references('id')->on('clinics')->nullOnDelete();
             $table->index(['user_id', 'created_at']);
         });
+    }
 
+    private function addClinicsColumns(): void
+    {
         Schema::table('clinics', function (Blueprint $table) {
             if (!Schema::hasColumn('clinics', 'points_enabled')) {
                 $table->boolean('points_enabled')->default(false)->after('status');
@@ -108,6 +171,13 @@ class CreateLoyaltyPointsSystem extends Migration
                 $table->string('points_category')->nullable()->after('points_enabled');
             }
         });
+    }
+
+    private function seedLoyaltyPointRules(): void
+    {
+        if (!Schema::hasTable('loyalty_point_rules') || DB::table('loyalty_point_rules')->exists()) {
+            return;
+        }
 
         DB::table('loyalty_point_rules')->insert([
             [
@@ -197,21 +267,166 @@ class CreateLoyaltyPointsSystem extends Migration
         ]);
     }
 
-    public function down()
+    private function purgeOrphanedUserReferences(): void
     {
-        Schema::table('clinics', function (Blueprint $table) {
-            if (Schema::hasColumn('clinics', 'points_category')) {
-                $table->dropColumn('points_category');
+        if (Schema::hasTable('loyalty_point_transactions')) {
+            DB::table('loyalty_point_transactions as t')
+                ->leftJoin('users as u', 'u.id', '=', 't.user_id')
+                ->whereNull('u.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_coupon_redemptions')) {
+            DB::table('loyalty_coupon_redemptions as t')
+                ->leftJoin('users as u', 'u.id', '=', 't.user_id')
+                ->whereNull('u.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_share_logs')) {
+            DB::table('loyalty_share_logs as t')
+                ->leftJoin('users as u', 'u.id', '=', 't.user_id')
+                ->whereNull('u.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_point_transactions')) {
+            DB::table('loyalty_point_transactions as t')
+                ->leftJoin('clinics as c', 'c.id', '=', 't.clinic_id')
+                ->whereNotNull('t.clinic_id')
+                ->whereNull('c.id')
+                ->update(['t.clinic_id' => null]);
+        }
+
+        if (Schema::hasTable('loyalty_point_transactions')) {
+            DB::table('loyalty_point_transactions as t')
+                ->leftJoin('reservations as r', 'r.id', '=', 't.reservation_id')
+                ->whereNotNull('t.reservation_id')
+                ->whereNull('r.id')
+                ->update(['t.reservation_id' => null]);
+        }
+
+        if (Schema::hasTable('loyalty_coupon_redemptions')) {
+            DB::table('loyalty_coupon_redemptions as t')
+                ->leftJoin('loyalty_reward_coupons as c', 'c.id', '=', 't.coupon_id')
+                ->whereNull('c.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_coupon_redemptions')) {
+            DB::table('loyalty_coupon_redemptions as t')
+                ->leftJoin('clinics as c', 'c.id', '=', 't.clinic_id')
+                ->whereNull('c.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_coupon_redemptions')) {
+            DB::table('loyalty_coupon_redemptions as t')
+                ->leftJoin('clinics as c', 'c.id', '=', 't.confirmed_by')
+                ->whereNotNull('t.confirmed_by')
+                ->whereNull('c.id')
+                ->update(['t.confirmed_by' => null]);
+        }
+
+        if (Schema::hasTable('loyalty_reward_coupons')) {
+            DB::table('loyalty_reward_coupons as t')
+                ->leftJoin('clinics as c', 'c.id', '=', 't.clinic_id')
+                ->whereNull('c.id')
+                ->delete();
+        }
+
+        if (Schema::hasTable('loyalty_share_logs')) {
+            DB::table('loyalty_share_logs as t')
+                ->leftJoin('clinics as c', 'c.id', '=', 't.clinic_id')
+                ->whereNotNull('t.clinic_id')
+                ->whereNull('c.id')
+                ->update(['t.clinic_id' => null]);
+        }
+    }
+
+    private function addForeignKeys(): void
+    {
+        $this->addForeignKey('loyalty_point_transactions', 'user_id', 'users', 'id', 'cascade');
+        $this->addForeignKey('loyalty_point_transactions', 'clinic_id', 'clinics', 'id', 'set null');
+        $this->addForeignKey('loyalty_point_transactions', 'reservation_id', 'reservations', 'id', 'set null');
+
+        $this->addForeignKey('loyalty_reward_coupons', 'clinic_id', 'clinics', 'id', 'cascade');
+
+        $this->addForeignKey('loyalty_coupon_redemptions', 'coupon_id', 'loyalty_reward_coupons', 'id', 'cascade');
+        $this->addForeignKey('loyalty_coupon_redemptions', 'user_id', 'users', 'id', 'cascade');
+        $this->addForeignKey('loyalty_coupon_redemptions', 'clinic_id', 'clinics', 'id', 'cascade');
+        $this->addForeignKey('loyalty_coupon_redemptions', 'confirmed_by', 'clinics', 'id', 'set null');
+
+        $this->addForeignKey('loyalty_share_logs', 'user_id', 'users', 'id', 'cascade');
+        $this->addForeignKey('loyalty_share_logs', 'clinic_id', 'clinics', 'id', 'set null');
+    }
+
+    private function dropForeignKeys(): void
+    {
+        $definitions = [
+            'loyalty_share_logs' => ['user_id', 'clinic_id'],
+            'loyalty_coupon_redemptions' => ['coupon_id', 'user_id', 'clinic_id', 'confirmed_by'],
+            'loyalty_reward_coupons' => ['clinic_id'],
+            'loyalty_point_transactions' => ['user_id', 'clinic_id', 'reservation_id'],
+        ];
+
+        foreach ($definitions as $table => $columns) {
+            if (!Schema::hasTable($table)) {
+                continue;
             }
-            if (Schema::hasColumn('clinics', 'points_enabled')) {
-                $table->dropColumn('points_enabled');
+
+            foreach ($columns as $column) {
+                if (!$this->foreignKeyExists($table, $column)) {
+                    continue;
+                }
+
+                Schema::table($table, function (Blueprint $blueprint) use ($column) {
+                    $blueprint->dropForeign([$column]);
+                });
+            }
+        }
+    }
+
+    private function addForeignKey(
+        string $table,
+        string $column,
+        string $referencedTable,
+        string $referencedColumn,
+        string $onDelete
+    ): void {
+        if (!Schema::hasTable($table) || !Schema::hasColumn($table, $column) || !Schema::hasTable($referencedTable)) {
+            return;
+        }
+
+        if ($this->foreignKeyExists($table, $column)) {
+            return;
+        }
+
+        Schema::table($table, function (Blueprint $blueprint) use ($column, $referencedTable, $referencedColumn, $onDelete) {
+            $foreign = $blueprint->foreign($column)
+                ->references($referencedColumn)
+                ->on($referencedTable)
+                ->onUpdate('cascade');
+
+            if ($onDelete === 'cascade') {
+                $foreign->onDelete('cascade');
+            } elseif ($onDelete === 'set null') {
+                $foreign->nullOnDelete();
+            } else {
+                $foreign->onDelete($onDelete);
             }
         });
+    }
 
-        Schema::dropIfExists('loyalty_share_logs');
-        Schema::dropIfExists('loyalty_coupon_redemptions');
-        Schema::dropIfExists('loyalty_reward_coupons');
-        Schema::dropIfExists('loyalty_point_transactions');
-        Schema::dropIfExists('loyalty_point_rules');
+    private function foreignKeyExists(string $table, string $column): bool
+    {
+        $database = Schema::getConnection()->getDatabaseName();
+
+        return DB::table('information_schema.KEY_COLUMN_USAGE')
+            ->where('TABLE_SCHEMA', $database)
+            ->where('TABLE_NAME', $table)
+            ->where('COLUMN_NAME', $column)
+            ->whereNotNull('REFERENCED_TABLE_NAME')
+            ->exists();
     }
 }

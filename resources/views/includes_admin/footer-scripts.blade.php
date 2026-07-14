@@ -178,7 +178,19 @@
                     return;
                 }
 
-                if ($table.find('thead th').length && $table.find('tbody tr').length) {
+                var headerCount = $table.find('thead tr').last().children('th, td').length;
+                var hasInvalidBodyRow = false;
+
+                $table.find('tbody tr').each(function () {
+                    var $cells = $(this).children('th, td');
+
+                    if ($cells.length !== headerCount || $cells.filter('[colspan], [rowspan]').length) {
+                        hasInvalidBodyRow = true;
+                        return false;
+                    }
+                });
+
+                if (headerCount && $table.find('tbody tr').length && !hasInvalidBodyRow) {
                     $table.addClass('table border-0 custom-table comman-table mb-0');
                     $table.DataTable({
                         retrieve: true,

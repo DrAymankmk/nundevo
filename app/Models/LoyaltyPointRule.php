@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LoyaltyPointRule extends Model
 {
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
     protected $fillable = [
         'key',
         'name_ar',

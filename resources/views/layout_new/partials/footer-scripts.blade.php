@@ -197,10 +197,12 @@
     <script src="{{URL::asset('build/js/sortable.js')}}"></script>
 @endif
 
-@if (Route::is(['ui-sweetalerts']))
+@if (Route::is(['ui-sweetalerts']) || Route::is('cms.*'))
     <!-- Sweet Alerts js -->
     <script src="{{URL::asset('build/plugins/sweetalert2/sweetalert2.min.js')}}"></script>
+    @if (Route::is(['ui-sweetalerts']))
     <script src="{{URL::asset('build/js/sweetalerts.js')}}"></script>
+    @endif
 @endif
 
 
@@ -284,6 +286,11 @@
     <script src="{{URL::asset('build/js/counter.js')}}"></script>
 @endif
 
+
+    <script>
+        window.datatableI18n = window.datatableI18n || {};
+        window.datatableI18n.searchPlaceholder = @json(__('main.search_by_name'));
+    </script>
 
     <!-- Main JS -->
     <script src="{{URL::asset('build/js/script.js')}}"></script>

@@ -456,7 +456,7 @@ Template Name: Preclinic - Bootstrap Admin Template
 			"language": {
 				search: ' ',
 				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
+				searchPlaceholder: (window.datatableI18n && window.datatableI18n.searchPlaceholder) || "Search",
 				sLengthMenu: 'Row Per Page _MENU_ Entries',
 				info: "_START_ - _END_ of _TOTAL_ items",
 				paginate: {

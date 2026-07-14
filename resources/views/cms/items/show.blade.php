@@ -158,7 +158,7 @@
 					<div class="row">
 						@foreach($gallery as $media)
 						<div class="col-md-3 mb-3">
-							<img src="{{ $media->getUrl('thumb') ?? $media->getUrl() }}"
+							<img src="{{ \App\Support\Cms\CmsGalleryMedia::previewUrl($media) }}"
 								alt="{{ $media->name }}"
 								class="img-thumbnail w-100"
 								style="height: 200px; object-fit: cover;">

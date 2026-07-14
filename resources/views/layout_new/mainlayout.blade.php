@@ -319,7 +319,7 @@
                                                                         info: "Showing records _START_ to _END_ of _TOTAL_",
                                                                         lengthMenu: "Display _MENU_ records",
                                                                         search: "_INPUT_",
-                                                                        searchPlaceholder: "Search...",
+                                                                        searchPlaceholder: @json(__('main.search_by_name')),
                                                                         zeroRecords: "No matching records found",
                                                                         infoEmpty: "No records to display",
                                                                         infoFiltered: "(filtered from _MAX_ total records)"
@@ -333,7 +333,7 @@
                                                                         info: "عرض السجلات من _START_ إلى _END_ من إجمالي _TOTAL_ سجلات",
                                                                         lengthMenu: "عرض _MENU_ سجلات",
                                                                         search: "_INPUT_",
-                                                                        searchPlaceholder: "بحث...",
+                                                                        searchPlaceholder: @json(__('main.search_by_name')),
                                                                         zeroRecords: "لا توجد سجلات مطابقة",
                                                                         infoEmpty: "لا توجد سجلات للعرض",
                                                                         infoFiltered: "(تمت التصفية من إجمالي _MAX_ سجلات)"
@@ -371,6 +371,8 @@
                                                             </script>
 
                                     @stack('scripts')
+
+
 
 
                                 </body>

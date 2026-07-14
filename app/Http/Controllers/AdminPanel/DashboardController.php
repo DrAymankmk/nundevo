@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdminPanel;
 
 use App\Http\Controllers\Controller;
+use App\Services\ClinicModuleService;
 use App\Models\AppType;
 use App\Models\Clinic;
 use App\Models\ClinicPoint;
@@ -245,6 +246,12 @@ class DashboardController extends Controller
             }
             return view('home.' . $blade, compact('data'));
         } else {
+            $modules = app(ClinicModuleService::class);
+            if (in_array((int) auth()->user()->app_type, [1, 7, 11], true)
+                && ! $modules->hasModule(auth()->user(), 'clinic_admin')) {
+                return redirect()->route($modules->loginRedirectRoute(auth()->user()));
+            }
+
             $auth_app = Auth::user()->app_type == 7 ? Auth::user()->id : Auth::user()->parent_id;
             $data['doctors'] = Clinic::where('parent_id', $auth_app)->where('app_type',1)->count();
             $data['receptionists'] = Clinic::where('parent_id', $auth_app)->where('app_type', 2)->count();

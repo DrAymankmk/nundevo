@@ -293,18 +293,9 @@
                 </div>
             @endif
             @php
-                $sectionExistingImages = collect();
-                if ($section ?? null) {
-                    $mainSectionImage = $section->getFirstMedia('images');
-                    if ($mainSectionImage) {
-                        $sectionExistingImages->push($mainSectionImage);
-                    }
-                    foreach ($section->getMedia('gallery') as $media) {
-                        if (! $sectionExistingImages->contains('id', $media->id)) {
-                            $sectionExistingImages->push($media);
-                        }
-                    }
-                }
+                $sectionExistingImages = ($section ?? null)
+                    ? $section->getMedia('gallery')
+                    : collect();
             @endphp
             @include('components.gallery-upload', [
             'deferGalleryInit' => true,

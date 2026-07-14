@@ -11,6 +11,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Traits\HasMediaRetrieval;
+use App\Support\Cms\CmsGalleryMedia;
 
 class CmsSection extends Model implements HasMedia
 {
@@ -139,14 +140,14 @@ class CmsSection extends Model implements HasMedia
             ->sharpen(10)
             ->nonOptimized()
             ->nonQueued()
-            ->performOnCollections('images');
+            ->performOnCollections('images', 'gallery');
 
         $this->addMediaConversion('preview')
             ->width(800)
             ->height(600)
             ->nonOptimized()
             ->nonQueued()
-            ->performOnCollections('images');
+            ->performOnCollections('images', 'gallery');
     }
 
     public static function normalizeType(?string $type): string
@@ -258,5 +259,18 @@ class CmsSection extends Model implements HasMedia
         $options = static::layoutOptionsFor($type);
 
         return $options[$normalizedLayout]['preview'] ?? null;
+    }
+
+    public function syncPrimaryImageFromGallery(): void
+    {
+        $this->clearMediaCollection('images');
+
+        $firstImage = $this->getMedia('gallery')->first(
+            fn (Media $media) => CmsGalleryMedia::isImage($media)
+        );
+
+        if ($firstImage) {
+            $firstImage->copy($this, 'images');
+        }
     }
 }

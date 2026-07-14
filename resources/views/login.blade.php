@@ -107,7 +107,7 @@
         .toggle-password {
             z-index: 9999;
             position: absolute;
-            top: 70%;
+            top: 67%;
             right: 40px;
             color: var(--randevou-primary);
         }

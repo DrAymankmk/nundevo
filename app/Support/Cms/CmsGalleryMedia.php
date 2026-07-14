@@ -66,10 +66,42 @@ class CmsGalleryMedia
 
     public static function previewUrl(Media $media): string
     {
+        return self::displayUrl($media) ?? $media->getUrl();
+    }
+
+    public static function displayUrl(Media $media, string $conversion = 'thumb'): ?string
+    {
         if (self::isVideo($media)) {
+            return self::accessibleUrl($media);
+        }
+
+        if ($conversion !== '' && $media->hasGeneratedConversion($conversion)) {
+            $conversionPath = $media->getPath($conversion);
+
+            if (file_exists($conversionPath)) {
+                return $media->getUrl($conversion);
+            }
+        }
+
+        return self::accessibleUrl($media);
+    }
+
+    public static function accessibleUrl(Media $media): ?string
+    {
+        if (file_exists($media->getPath())) {
             return $media->getUrl();
         }
 
-        return $media->getUrl('thumb') ?: $media->getUrl();
+        foreach (['thumb', 'preview'] as $conversion) {
+            if (! $media->hasGeneratedConversion($conversion)) {
+                continue;
+            }
+
+            if (file_exists($media->getPath($conversion))) {
+                return $media->getUrl($conversion);
+            }
+        }
+
+        return null;
     }
 }

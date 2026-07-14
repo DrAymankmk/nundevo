@@ -133,13 +133,13 @@ class CmsItem extends Model implements HasMedia
             ->sharpen(10)
             ->nonOptimized()
             ->nonQueued()
-            ->performOnCollections('images');
+            ->performOnCollections('images', 'gallery', 'icons');
 
         $this->addMediaConversion('preview')
             ->width(800)
             ->height(600)
             ->nonOptimized()
             ->nonQueued()
-            ->performOnCollections('images');
+            ->performOnCollections('images', 'gallery', 'icons');
     }
 }

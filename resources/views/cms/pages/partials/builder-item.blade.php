@@ -189,14 +189,14 @@
                                                     = ($item
                                                     ?? null)
                                                     ?
-                                                    ($item->getFirstMediaUrl('images_'.$lang->code)
+                                                    ($item->getFirstAccessibleMediaUrl('images_'.$lang->code)
                                                     ?: null) :
                                                     null;
                                                     $iconImgUrl
                                                     = ($item
                                                     ?? null)
                                                     ?
-                                                    ($item->getFirstMediaUrl('icons_'.$lang->code)
+                                                    ($item->getFirstAccessibleMediaUrl('icons_'.$lang->code)
                                                     ?: null) :
                                                     null;
                                                 @endphp

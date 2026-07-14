@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\AdminPanel;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\ClinicModuleService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -15,7 +16,7 @@ class LoginController extends Controller
         return view('login');
     }
 
-    public function login(Request $request)
+    public function login(Request $request, ClinicModuleService $modules)
     {
         $credential = array('email' => $request->email, 'password' => $request->password);
         if ($user = Auth::attempt($credential)) {
@@ -34,7 +35,10 @@ class LoginController extends Controller
                 Session::put('permission', Auth::user()->fresh());
             }
 
-            return redirect()->route('admin.dashboard');
+            $redirectRoute = $modules->loginRedirectRoute(Auth::user());
+            Session::put('enabled_modules', $modules->getEnabledModules(Auth::user()));
+
+            return redirect()->route($redirectRoute);
 
         } else {
            session()->flash('failed', trans('messages.auth.login_message_failed'));

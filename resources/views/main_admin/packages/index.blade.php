@@ -110,7 +110,7 @@
                                                 <td>{{ $package->duration }}</td>
                                                 <td>{{ $package->price }}</td>
                                                 <td>{{ $package->subscriptions_package_users_count ?? 0 }}</td>
-                                                <td>
+                                                <!-- <td>
                                                     @if($package->status == 1)
                                                         <button
                                                             class="custom-badge status-green">@lang('admin.Active')</button>
@@ -118,15 +118,16 @@
                                                         <button
                                                             class="custom-badge status-red">@lang('admin.In Active')</button>
                                                     @endif
-                                                </td>
+                                                </td> -->
+                            <td><span class="badge @if($package->status == 1) badge-soft-success border border-success @else badge-soft-danger border border-danger @endif  px-2 py-1 fs-13 fw-medium">@if($package->status == 1) @lang('admin.Active') @else @lang('admin.Inactive') @endif </span></td>
 
                                                 <td class="d-flex gap-2">
-                                                    <a href="javascript:void(0)" class="add-table-invoice"
+                                                    <a href="javascript:void(0)" class="" style="padding:10px; border-radius:50%;"
                                                        data-bs-toggle="modal"
                                                        data-bs-target="#edit_package_{{$package->id}}"
                                                        title="Edit"><i
                                                             class="fa fa-pen-to-square"></i></a>
-                                                    <a href="javascript:void(0)" class="add-table-invoice danger"
+                                                    <a href="javascript:void(0)" class="danger" style="padding:10px; border-radius:50%;"
                                                        data-bs-toggle="modal"
                                                        data-bs-target="#delete_package_{{$package->id}}"
                                                        title="Delete"><i class="fa fa-trash-can"></i></a>

@@ -47,7 +47,7 @@ class ClinicsController extends Controller
 
         $clinics = $query->paginate(20);
 
-        return view('main_admin.clinics', compact('clinics'));
+        return view('main_admin.clinics.index', compact('clinics'));
     }
 
     // get clinic details
@@ -64,7 +64,7 @@ class ClinicsController extends Controller
             ->first();
         $app_types = AppType::whereIn('id', [2,3,5,8,9,10,25,26,27])->get();
         $data['rating'] = ClinicRating::where('clinic_id', $clinic_id)->where('comment', '!=', null)->avg('rate_value');
-        return view('main_admin.clinic_details', compact('clinic','data','app_types'));
+        return view('main_admin.clinics.details', compact('clinic','data','app_types'));
     }
 
     // doctor details
@@ -73,7 +73,7 @@ class ClinicsController extends Controller
         $doctor = Clinic::with('specialties')->withCount('complaints','reservations_done','reservations_cancel','condition')->whereId($doctor_id)->first();
         $groupedReservations = $doctor->reservations->groupBy('status_id'); // Or name_en based on locale
 
-        return view('main_admin.doctor_details', compact('doctor','groupedReservations'));
+        return view('main_admin.clinics.doctor_details', compact('doctor','groupedReservations'));
     }
 
     public function update_clinic($id, Request $request)
@@ -180,7 +180,7 @@ class ClinicsController extends Controller
         $specialties = Specialty::where('parent_id', null)->where('status', 1)->orderBy('id', 'desc')->get();
         $cities = City::where('status', 1)->get();
         $packages = Package::where('status', 1)->get();
-        return view('main_admin.create_clinic', compact('cities', 'specialties','packages'));
+        return view('main_admin.clinics.create', compact('cities', 'specialties','packages'));
     }
 
     public function create_clinic(Request $request)

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ContactUs;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -18,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        require_once app_path('helpers.php');
     }
 
     /**
@@ -43,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Paginator::useBootstrap();
+
+        Blade::if('clinicModule', function (string $module) {
+            return clinic_has_module($module);
+        });
 
         View::composer('layout_new.partials.sidebar', function ($view) {
             $unreadContactUsCount = 0;

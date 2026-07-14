@@ -1160,7 +1160,7 @@ return [
     'complete_reservation' => 'إنهاء الحجز',
     'complete_reservation_confirm' => 'هل تريد إنهاء هذا الحجز؟',
 
-
+    'details_ar'=>'تفاصيل',
 
 
 

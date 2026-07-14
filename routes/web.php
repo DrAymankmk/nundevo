@@ -130,7 +130,7 @@ Route::group(['namespace' => 'AdminPanel', 'prefix' => 'admin'], function () {
 });
 
 
-Route::group(["middleware" => ["auth", "setlocale"], 'prefix' => 'admin', 'namespace' => 'AdminPanel'], function () {
+Route::group(["middleware" => ["auth", "setlocale", "clinic.module"], 'prefix' => 'admin', 'namespace' => 'AdminPanel'], function () {
 
 
 
@@ -496,6 +496,20 @@ Route::group(["middleware" => ["auth", "setlocale"], 'prefix' => 'admin', 'names
 
     // points clinic
     Route::get('points', 'PointsController@index')->name('points');
+
+    Route::group(['prefix' => 'loyalty'], function () {
+        Route::get('/', 'LoyaltyDashboardController@index')->name('loyalty.dashboard');
+        Route::get('coupons', 'LoyaltyDashboardController@coupons')->name('loyalty.coupons');
+        Route::post('coupons', 'LoyaltyDashboardController@storeCoupon')->name('loyalty.coupons.store');
+        Route::put('coupons/{id}', 'LoyaltyDashboardController@updateCoupon')->name('loyalty.coupons.update');
+        Route::get('coupons/{id}/status/{status}', 'LoyaltyDashboardController@updateCouponStatus')->name('loyalty.coupons.status');
+        Route::delete('coupons/{id}', 'LoyaltyDashboardController@destroyCoupon')->name('loyalty.coupons.destroy');
+        Route::get('redemptions', 'LoyaltyDashboardController@redemptions')->name('loyalty.redemptions');
+        Route::get('redemptions/{id}/send-otp', 'LoyaltyDashboardController@sendRedemptionOtp')->name('loyalty.redemptions.send-otp');
+        Route::post('redemptions/{id}/confirm', 'LoyaltyDashboardController@confirmRedemption')->name('loyalty.redemptions.confirm');
+        Route::get('transactions', 'LoyaltyDashboardController@transactions')->name('loyalty.transactions');
+    });
+
     // attendance and departure
     Route::get('attendance-departure', 'AttendanceAndDepartureController@attendance_departure')->name('attendance-departure');
     Route::get('view-employee/{employee_id}', 'AttendanceAndDepartureController@view_employee')->name('view-employee');
@@ -858,7 +872,8 @@ Route::group(["middleware" => ["auth", "setlocale"], 'prefix' => 'admin', 'names
 
 
         Route::resource('notificationsList', 'NotificationsController');
-        Route::resource('points-exchanges', 'PointsExchangesController');
+        Route::resource('points-exchanges', 'PointsExchangesController')->except(['show', 'create', 'edit']);
+        Route::get('points-exchanges/{id}/status/{status}', 'PointsExchangesController@toggleStatus')->name('points-exchanges.toggle');
         Route::resource('roles', 'RolesController');
         // clinics
         Route::get('clinics', 'ClinicsController@index')->name('clinics');
@@ -909,6 +924,18 @@ Route::group(["middleware" => ["auth", "setlocale"], 'prefix' => 'admin', 'names
         Route::post('update-point/{id}', 'PointsController@update_point')->name('update-point');
 //        Route::get('update-status-point/{id}/{status}', 'SpecialtiesControllerController@update_status_point')->name('update-status-specialty');
         Route::delete('destroy-point/{id}', 'PointsController@destroy_point')->name('destroy-point');
+
+        Route::get('loyalty-organizations', 'LoyaltyOrganizationsController@index')->name('loyalty-organizations');
+        Route::post('loyalty-organizations', 'LoyaltyOrganizationsController@store')->name('loyalty-organizations.store');
+        Route::put('loyalty-organizations/{id}', 'LoyaltyOrganizationsController@update')->name('loyalty-organizations.update');
+        Route::put('loyalty-organizations/{id}/organization', 'LoyaltyOrganizationsController@updateOrganization')->name('loyalty-organizations.update-organization');
+        Route::get('loyalty-organizations/{id}/status/{status}', 'LoyaltyOrganizationsController@toggleStatus')->name('loyalty-organizations.toggle');
+
+        Route::get('loyalty-point-rules', 'LoyaltyPointRulesController@index')->name('loyalty-point-rules');
+        Route::post('loyalty-point-rules', 'LoyaltyPointRulesController@store')->name('loyalty-point-rules.store');
+        Route::put('loyalty-point-rules/{id}', 'LoyaltyPointRulesController@update')->name('loyalty-point-rules.update');
+        Route::get('loyalty-point-rules/{id}/status/{status}', 'LoyaltyPointRulesController@toggleStatus')->name('loyalty-point-rules.toggle');
+        Route::delete('loyalty-point-rules/{id}', 'LoyaltyPointRulesController@destroy')->name('loyalty-point-rules.destroy');
 
         Route::get('admin-supervisor', 'SuperVisorController@index')->name('admin-supervisor');
         Route::post('create-supervisor', 'SuperVisorController@create_supervisor')->name('create-supervisor');

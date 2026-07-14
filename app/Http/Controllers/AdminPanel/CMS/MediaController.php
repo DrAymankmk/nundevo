@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\AdminPanel\CMS;
 
 use App\Models\MediaLibrary;
+use App\Models\CmsSection;
+use App\Support\Cms\CmsGalleryMedia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,8 +83,8 @@ class MediaController extends Controller
                 'model_type' => $item->model_type,
                 'model_type_display' => class_basename($item->model_type),
                 'model_id' => $item->model_id,
-                'url' => $item->getUrl(),
-                'thumbnail' => $item->getUrl(),
+                'url' => CmsGalleryMedia::accessibleUrl($item) ?? $item->getUrl(),
+                'thumbnail' => CmsGalleryMedia::displayUrl($item) ?? CmsGalleryMedia::accessibleUrl($item) ?? $item->getUrl(),
                 'created_at' => $item->created_at->format('Y-m-d H:i:s'),
                 'is_image' => Str::startsWith($item->mime_type, 'image/'),
             ];
@@ -130,7 +132,7 @@ class MediaController extends Controller
                     'id' => $media->id,
                     'name' => $media->name,
                     'url' => $media->getUrl(),
-                    'thumbnail' => $media->getUrl('thumb') ?? $media->getUrl(),
+                    'thumbnail' => CmsGalleryMedia::displayUrl($media) ?? CmsGalleryMedia::accessibleUrl($media) ?? $media->getUrl(),
                 ];
             }
         }
@@ -312,10 +314,18 @@ class MediaController extends Controller
     /**
      * Remove the specified media resource.
      */
-    public function destroy(Media $media): JsonResponse
+    public function destroy($id): JsonResponse
     {
         try {
+            $media = Media::findOrFail($id);
+            $owner = $media->model;
+            $collectionName = $media->collection_name;
+
             $media->delete();
+
+            if ($owner instanceof CmsSection && $collectionName === 'gallery') {
+                $owner->syncPrimaryImageFromGallery();
+            }
 
             return response()->json([
                 'success' => true,

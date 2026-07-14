@@ -15,7 +15,13 @@ class Clinic extends Authenticatable
         'name', 'email', 'password', 'phone', 'image', 'qr_code', 'status', 'app_type', 'parent_id', 'city_id', 'lat', 'lng', 'address',
         'gender', 'date_created','package_end_date', 'communication_officer','communication_officer_phone', 'specialization', 'firebase_token', 'platform', 'device_token', 'jwt_token', 'info', 'degree_id', 'ID_Number',
         'facebook_url', 'instagram_url', 'tiktok_url', 'snapchat_url', 'youtube_url'
-        ,'is_manager','nursing_point_id','notes','role_id','points_enabled','points_category'
+        ,'is_manager','nursing_point_id','notes','role_id','points_enabled','points_category','enabled_modules',
+        'license_number','medical_commercial_license','alternative_phone'
+    ];
+
+    protected $casts = [
+        'enabled_modules' => 'array',
+        'points_enabled' => 'boolean',
     ];
 
 
@@ -320,6 +326,95 @@ class Clinic extends Authenticatable
     public function loyalty_redemptions()
     {
         return $this->hasMany(LoyaltyCouponRedemption::class, 'clinic_id');
+    }
+
+    public function appType()
+    {
+        return $this->belongsTo(AppType::class, 'app_type');
+    }
+
+    public static function resolveOrganizationId(?int $clinicId): ?int
+    {
+        if (!$clinicId) {
+            return null;
+        }
+
+        $clinic = self::find($clinicId);
+        if (!$clinic) {
+            return null;
+        }
+
+        if (in_array((int) $clinic->app_type, [1, 4, 5, 7], true)) {
+            return (int) $clinic->id;
+        }
+
+        return $clinic->parent_id ? (int) $clinic->parent_id : (int) $clinic->id;
+    }
+
+    public static function isLoyaltyEnabledForClinic(?int $clinicId): bool
+    {
+        $organizationId = self::resolveOrganizationId($clinicId);
+
+        if (!$organizationId) {
+            return false;
+        }
+
+        return (bool) self::where('id', $organizationId)->value('points_enabled');
+    }
+
+    public function organizationClinicId(): int
+    {
+        if ((int) $this->app_type === 7) {
+            return (int) $this->id;
+        }
+
+        return (int) ($this->parent_id ?: $this->id);
+    }
+
+    public function hasLoyaltyEnabled(): bool
+    {
+        $organizationId = $this->organizationClinicId();
+
+        return (bool) self::where('id', $organizationId)->value('points_enabled');
+    }
+
+    public function isPointsOnlyAccess(): bool
+    {
+        if (! is_array($this->enabled_modules)) {
+            return false;
+        }
+
+        $enabled = array_values(array_unique(array_map('strval', $this->enabled_modules)));
+        sort($enabled);
+
+        $pointsOnly = array_values(config('clinic_modules.points_only_modules', ['points']));
+        sort($pointsOnly);
+
+        return $enabled === $pointsOnly;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function selectedModuleKeys(): array
+    {
+        if ($this->enabled_modules === null) {
+            return [];
+        }
+
+        return array_values(array_unique(array_map('strval', (array) $this->enabled_modules)));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function displayModuleKeys(): array
+    {
+        if ($this->enabled_modules === null) {
+            return array_keys(config('clinic_modules.modules', []));
+        }
+
+        return $this->selectedModuleKeys();
     }
 
 }
