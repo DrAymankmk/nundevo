@@ -2,15 +2,10 @@
 	<div class="sidebar-inner slimscroll">
 		<div id="sidebar-menu" class="sidebar-menu">
 			<ul>
-				@php
-					$homeRoute = app(\App\Services\ClinicModuleService::class)->loginRedirectRoute(auth()->user());
-				@endphp
-				@if(clinic_has_module('clinic_admin') || clinic_has_module('points'))
-				<li><a href="{{ route($homeRoute) }}"><span class="menu-side"><img
+				<li><a href="{{ route('admin.dashboard') }}"><span class="menu-side"><img
 								src="/assets/img/icons/menu-icon-01.svg"
 								alt=""></span>
 						<span>@lang('admin.dashboard')</span></a></li>
-				@endif
 				<li><a href="{{ route('profile') }}"><span
 							class="menu-side clinic-admin-menu-icon"><i
 								class="fa-solid fa-user-gear"></i></span>
@@ -87,12 +82,6 @@
 								src="/media/icons/my_points.png"
 								alt=""></span>
 						<span>@lang('main.loyalty_point_rules')</span></a></li>
-
-				<li><a href="{{ route('points-exchanges.index') }}"><span class="menu-side"><img
-								style="background-color: #888"
-								src="/media/icons/my_points.png"
-								alt=""></span>
-						<span>@lang('main.points_exchanges')</span></a></li>
 
 				<li><a href="{{ route('admin-supervisor') }}"><span class="menu-side"><img
 								style="background-color: #888"
@@ -178,8 +167,10 @@
 							src="/assets/img/icons/logout.svg" alt=""></span>
 					<span>@lang('admin.Sign out')</span></a>
 			</div>
+
+
+			<!-- reception -->
 			@elseif(auth()->user()->app_type == 2)
-			@clinicModule('reception')
 			<li><a href="{{ route('appointments') }}"><span
 						class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-calendar-check"></i></span>
@@ -194,21 +185,24 @@
 			<li><a href="{{ route('chatList') }}"><span class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-comments"></i></span>
 					<span>@lang('admin.chat_list')</span></a></li>
-			@endclinicModule
-			@clinicModule('points')
-			<li><a href="{{ route('loyalty.redemptions') }}"><span
-						class="menu-side clinic-admin-menu-icon"><i
-							class="fa-solid fa-gift"></i></span>
-					<span>@lang('main.loyalty_program')</span></a></li>
-			@endclinicModule
+
+					
 			@else
+
+			<!-- clinic -->
 			@if(in_array(auth()->user()->app_type, [1, 7,11]))
-			@clinicModule('clinic_admin')
 			<li><a href="{{ route('admin.doctors.ratings') }}"
 					class="{{ request()->routeIs('admin.doctors.ratings') ? 'active' : '' }}"><span
 						class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-star-half-stroke"></i></span>
 					<span>@lang('admin.doctors_ratings')</span></a></li>
+
+			@clinicModule('points')
+			<li><a href="{{ route('loyalty.redemptions') }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-gift"></i></span>
+					<span>@lang('main.loyalty_program')</span></a></li>
+			@endclinicModule		
 
 			<li><a href="{{ route('departments') }}"><span class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-layer-group"></i></span>
@@ -217,16 +211,7 @@
 			<li><a href="{{ route('offers') }}"><span class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-tags"></i></span>
 					<span>@lang('admin.Manage Offers')</span></a></li>
-			@endclinicModule
 
-			@clinicModule('points')
-			<li><a href="{{ route('loyalty.dashboard') }}"><span
-						class="menu-side clinic-admin-menu-icon"><i
-							class="fa-solid fa-gift"></i></span>
-					<span>@lang('main.loyalty_program')</span></a></li>
-			@endclinicModule
-
-			@clinicModule('clinic_admin')
 			<li><a href="{{ route('specialties') }}"><span class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-stethoscope"></i></span>
 					<span>@lang('admin.Manage available specialties')</span></a></li>
@@ -245,7 +230,6 @@
 			<li><a href="{{ route('contactUs') }}"><span class="menu-side clinic-admin-menu-icon"><i
 							class="fa-solid fa-comments"></i></span>
 					<span>@lang('admin.Complaints Box')</span></a></li>
-			@endclinicModule
 
 			<li><a href="{{ route('change-password') }}"><span
 						class="menu-side clinic-admin-menu-icon"><i
