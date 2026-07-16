@@ -106,9 +106,9 @@ $title = $st?->title ?: $defaultSlides[$idx % 3]['title'];
 $sub = $it?->sub_title ?? ($idx === 0 ? ($st?->subtitle ?: __('welcome to randevu')) : __('welcome to randevu'));
 $desc = $it?->content && $idx === 0 ? $it->content : '';
 $buttons = $mapModelLinksToButtons($item);
-// if ($buttons->isEmpty()) {
-// $buttons = $fallbackButtons;
-// }
+if ($buttons->isEmpty()) {
+$buttons = $fallbackButtons;
+}
 $slides->push(['title' => $title, 'subtitle' => $sub, 'desc' => $desc, 'img' => $heroImg, 'buttons' => $buttons]);
 }
 } else {
@@ -118,7 +118,7 @@ $slides->push([
 'subtitle' => $st?->subtitle ?: __('welcome to randevu '),
 'desc' => $st?->description && $idx === 0 ? $st->description : '',
 'img' => $def['img'],
-// 'buttons' => $fallbackButtons,
+'buttons' => $fallbackButtons,
 ]);
 }
 }
@@ -151,7 +151,7 @@ $slides->push([
 									<div class="btn-group justify-content-xl-start justify-content-center"
 										data-ani="slideinup"
 										data-ani-delay="0.8s">
-										@foreach($slide['buttons'] as $btn)
+										@foreach(($slide['buttons'] ?? []) as $btn)
 										<a href="{{ $btn['href'] }}"
 											class="{{ $btn['btnClass'] }}"
 											@if(($btn['target']
