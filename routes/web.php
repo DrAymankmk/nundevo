@@ -937,6 +937,13 @@ Route::group(["middleware" => ["auth", "setlocale", "clinic.module"], 'prefix' =
         Route::get('loyalty-point-rules/{id}/status/{status}', 'LoyaltyPointRulesController@toggleStatus')->name('loyalty-point-rules.toggle');
         Route::delete('loyalty-point-rules/{id}', 'LoyaltyPointRulesController@destroy')->name('loyalty-point-rules.destroy');
 
+        Route::get('modules-management', 'ModulesController@index')->name('modules-management.index');
+        Route::get('modules-management/{module}', 'ModulesController@show')->name('modules-management.show');
+        Route::post('modules-management/{module}/items', 'ModulesController@store')->name('modules-management.store');
+        Route::put('modules-management/{module}/items/{id}', 'ModulesController@update')->name('modules-management.update');
+        Route::get('modules-management/{module}/items/{id}/toggle', 'ModulesController@toggle')->name('modules-management.toggle');
+        Route::delete('modules-management/{module}/items/{id}', 'ModulesController@destroy')->name('modules-management.destroy');
+
         Route::get('admin-supervisor', 'SuperVisorController@index')->name('admin-supervisor');
         Route::post('create-supervisor', 'SuperVisorController@create_supervisor')->name('create-supervisor');
         Route::put('update-supervisor/{id}', 'SuperVisorController@update_supervisor')->name('update-supervisor');

@@ -387,7 +387,7 @@ class Clinic extends Authenticatable
         $enabled = array_values(array_unique(array_map('strval', $this->enabled_modules)));
         sort($enabled);
 
-        $pointsOnly = array_values(config('clinic_modules.points_only_modules', ['points']));
+        $pointsOnly = array_values(config('modules_management.points_only_modules', ['points']));
         sort($pointsOnly);
 
         return $enabled === $pointsOnly;
@@ -411,7 +411,7 @@ class Clinic extends Authenticatable
     public function displayModuleKeys(): array
     {
         if ($this->enabled_modules === null) {
-            return array_keys(config('clinic_modules.modules', []));
+            return array_keys(config('modules_management.modules', []));
         }
 
         return $this->selectedModuleKeys();

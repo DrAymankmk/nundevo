@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\ClinicModuleService;
+use App\Services\ModuleService;
 
 if (! function_exists('clinic_has_module')) {
     function clinic_has_module(string $module): bool
@@ -11,6 +11,6 @@ if (! function_exists('clinic_has_module')) {
             return false;
         }
 
-        return app(ClinicModuleService::class)->hasModule($user, $module);
+        return app(ModuleService::class)->hasModule($user, $module);
     }
 }

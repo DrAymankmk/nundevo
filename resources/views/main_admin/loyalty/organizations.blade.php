@@ -563,7 +563,7 @@ $(document).on('submit', '.org-modules-form', function(e) {
 	if (checkedCount === 0) {
 		e.preventDefault();
 		if (typeof showToast === 'function') {
-			showToast("{{ trans('main.clinic_modules_required') }}", 'danger');
+			showToast("{{ trans('main.modules_management_required') }}", 'danger');
 		}
 	}
 });

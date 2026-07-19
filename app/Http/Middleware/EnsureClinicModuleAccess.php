@@ -22,16 +22,29 @@ class EnsureClinicModuleAccess
             return $next($request);
         }
 
+        // Platform admin is unrestricted.
+        if ((int) ($user->app_type ?? 0) === 6) {
+            return $next($request);
+        }
+
         $routeName = $request->route()?->getName();
 
         if (! $this->modules->canAccessRoute($user, $routeName)) {
-            if ($this->modules->hasModule($user, 'points')) {
-                return redirect()
-                    ->route($this->modules->loginRedirectRoute($user))
-                    ->with('failed', trans('main.module_access_denied'));
+            $menuItem = null;
+
+            try {
+                $menuItem = \App\Models\ModuleMenuItem::query()
+                    ->where('route_name', $routeName)
+                    ->first();
+            } catch (\Throwable $e) {
+                // ignore missing table during early setup
             }
 
-            abort(403, trans('main.module_access_denied'));
+            $message = ($menuItem && ! $menuItem->is_active)
+                ? trans('main.module_item_access_denied')
+                : trans('main.module_access_denied');
+
+            abort(403, $message);
         }
 
         return $next($request);

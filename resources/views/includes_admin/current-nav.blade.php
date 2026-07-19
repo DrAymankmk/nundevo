@@ -2,15 +2,10 @@
 	<div class="sidebar-inner slimscroll">
 		<div id="sidebar-menu" class="sidebar-menu">
 			<ul>
-				@php
-					$homeRoute = app(\App\Services\ClinicModuleService::class)->loginRedirectRoute(auth()->user());
-				@endphp
-				@if(clinic_has_module('clinic_admin') || clinic_has_module('points'))
-				<li><a href="{{ route($homeRoute) }}"><span class="menu-side"><img
+				<li><a href="{{ route('admin.dashboard') }}"><span class="menu-side"><img
 								src="/assets/img/icons/menu-icon-01.svg"
 								alt=""></span>
 						<span>@lang('admin.dashboard')</span></a></li>
-				@endif
 				<li><a href="{{ route('profile') }}"><span
 							class="menu-side clinic-admin-menu-icon"><i
 								class="fa-solid fa-user-gear"></i></span>
@@ -24,6 +19,9 @@
 								src="/media/icons/notifications.png"
 								alt=""></span>
 						<span>@lang('admin.doctor.Notifications')</span></a></li>
+
+
+				@if(auth()->user()->app_type == 6)
 
 				<li><a href="{{ route('cities') }}"><span class="menu-side"><img
 								style="background-color: #888"
@@ -55,6 +53,12 @@
 								alt=""></span>
 						<span>@lang('admin.specialties')</span></a></li>
 
+				<li><a href="{{ route('cities') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/menu-icon-06.svg"
+								alt=""></span>
+						<span>@lang('admin.all_cities')</span></a></li>
+
 				<li><a href="{{ route('reports.index') }}"><span class="menu-side"><img
 								style="background-color: #888"
 								src="/media/icons/personal_information.png"
@@ -79,18 +83,6 @@
 								alt=""></span>
 						<span>@lang('main.loyalty_point_rules')</span></a></li>
 
-				<li><a href="{{ route('modules-management.index') }}"><span class="menu-side"><img
-								style="background-color: #888"
-								src="/media/icons/menu-icon-06.svg"
-								alt=""></span>
-						<span>@lang('main.modules_management')</span></a></li>
-
-				<li><a href="{{ route('points-exchanges.index') }}"><span class="menu-side"><img
-								style="background-color: #888"
-								src="/media/icons/my_points.png"
-								alt=""></span>
-						<span>@lang('main.points_exchanges')</span></a></li>
-
 				<li><a href="{{ route('admin-supervisor') }}"><span class="menu-side"><img
 								style="background-color: #888"
 								src="/media/icons/personal_information.png"
@@ -110,18 +102,64 @@
 						<span>@lang('main.permissions_types')</span></a></li>
 
 				<li>
-					<a href="{{ route('app-setting',['terms',1]) }}"><span
+					<a class="active" href="{{ route('app-setting',['terms',1]) }}"><span
 							class="menu-side"><img
 								src="/media/icons/menu-icon-16.svg"
 								alt=""></span>
 						<span>@lang('admin.setting')</span></a>
 				</li>
+				@endif
 
+				<li><a href="{{ route('doctor-attendance-departure') }}"><span
+							class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/Attendance and Departure.png"
+								alt=""></span>
+						<span>@lang('admin.doctor.Attendance and
+							Departure')</span></a></li>
+
+				<li><a href="{{ route('employee-clinic-shifts') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/personal_information.png"
+								alt=""></span>
+						<span>@lang('admin.doctor.Shifts')</span></a></li>
+
+
+				<li><a href="{{ route('request-permission') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/Attendance and Departure.png"
+								alt=""></span>
+						<span>@lang('admin.doctor.request a permission')</span></a>
+				</li>
+
+
+				<li><a href="{{ route('points') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/my_points.png"
+								alt=""></span>
+						<span>@lang('admin.My Points')</span></a></li>
 				<li><a href="{{ route('change-password') }}"><span class="menu-side"><img
 								style="background-color: #888"
 								src="/media/icons/change_password.png"
 								alt=""></span>
 						<span>@lang('admin.Change Password')</span></a></li>
+				@if(auth()->user()->app_type != 6)
+				<li><a href="{{ route('setting','about') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/abut_app.png"
+								alt=""></span>
+						<span>@lang('admin.About The App')</span></a></li>
+				<li><a href="{{ route('setting','privacy') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/Privacy Policy.png"
+								alt=""></span>
+						<span>@lang('admin.Privacy Policy')</span></a></li>
+				<li><a href="{{ route('setting','terms') }}"><span class="menu-side"><img
+								style="background-color: #888"
+								src="/media/icons/Terms of use.png"
+								alt=""></span>
+						<span>@lang('admin.Terms of use')</span></a></li>
+				@endif
 
 			</ul>
 			<div class="logout-btn">
@@ -129,34 +167,69 @@
 							src="/assets/img/icons/logout.svg" alt=""></span>
 					<span>@lang('admin.Sign out')</span></a>
 			</div>
+
+
+			<!-- reception -->
 			@elseif(auth()->user()->app_type == 2)
-			@clinicModule('reception')
-			@include('includes_admin.partials.module-menu-items', [
-				'items' => app(\App\Services\ClinicModuleService::class)
-					->menuItemsForModule('reception', (int) auth()->user()->app_type),
-			])
-			@endclinicModule
-			@clinicModule('points')
-			@include('includes_admin.partials.module-menu-items', [
-				'items' => app(\App\Services\ClinicModuleService::class)
-					->menuItemsForModule('points', (int) auth()->user()->app_type),
-			])
-			@endclinicModule
+			<li><a href="{{ route('appointments') }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-calendar-check"></i></span>
+					<span>@lang('admin.reception.appointments_list')</span></a></li>
+			<li><a href="{{route('add-patient')}}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-user-plus"></i></span>
+					<span>@lang('admin.reception.add_patient')</span></a></li>
+			<li><a href="{{ route('add-appointment') }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-calendar-plus"></i></span>
+					<span>@lang('admin.reception.add_appointment')</span></a></li>
+			<li><a href="{{ route('chatList') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-comments"></i></span>
+					<span>@lang('admin.chat_list')</span></a></li>
+
+					
 			@else
+
+			<!-- clinic -->
 			@if(in_array(auth()->user()->app_type, [1, 7,11]))
-			@clinicModule('clinic_admin')
-			@include('includes_admin.partials.module-menu-items', [
-				'items' => app(\App\Services\ClinicModuleService::class)
-					->menuItemsForModule('clinic_admin', (int) auth()->user()->app_type),
-			])
-			@endclinicModule
+			<li><a href="{{ route('admin.doctors.ratings') }}"
+					class="{{ request()->routeIs('admin.doctors.ratings') ? 'active' : '' }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-star-half-stroke"></i></span>
+					<span>@lang('admin.doctors_ratings')</span></a></li>
 
 			@clinicModule('points')
-			@include('includes_admin.partials.module-menu-items', [
-				'items' => app(\App\Services\ClinicModuleService::class)
-					->menuItemsForModule('points', (int) auth()->user()->app_type),
-			])
-			@endclinicModule
+			<li><a href="{{ route('loyalty.redemptions') }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-gift"></i></span>
+					<span>@lang('main.loyalty_program')</span></a></li>
+			@endclinicModule		
+
+			<li><a href="{{ route('departments') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-layer-group"></i></span>
+					<span>@lang('admin.departments')</span></a></li>
+
+			<li><a href="{{ route('offers') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-tags"></i></span>
+					<span>@lang('admin.Manage Offers')</span></a></li>
+
+			<li><a href="{{ route('specialties') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-stethoscope"></i></span>
+					<span>@lang('admin.Manage available specialties')</span></a></li>
+
+			@if(auth()->user()->app_type != 7)
+			<li><a href="{{ route('branches') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-code-branch"></i></span>
+					<span>@lang('admin.Manage Branch')</span></a></li>
+			@endif
+
+			<li><a href="{{ route('clinic.supervisor') }}"><span
+						class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-user-shield"></i></span>
+					<span>@lang('admin.SuperVisor Management')</span></a></li>
+
+			<li><a href="{{ route('contactUs') }}"><span class="menu-side clinic-admin-menu-icon"><i
+							class="fa-solid fa-comments"></i></span>
+					<span>@lang('admin.Complaints Box')</span></a></li>
 
 			<li><a href="{{ route('change-password') }}"><span
 						class="menu-side clinic-admin-menu-icon"><i
@@ -216,8 +289,6 @@
 									alt=""></span>
 							<span>@lang('admin.chat_list')</span></a>
 					</li>
-
-					
 
 					<li class="submenu">
 						<a href="#"><span class="menu-side"><img

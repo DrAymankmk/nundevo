@@ -7,7 +7,7 @@ use App\Models\ModuleMenuItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class ClinicModuleService
+class ModuleService
 {
     public function allModuleKeys(): array
     {

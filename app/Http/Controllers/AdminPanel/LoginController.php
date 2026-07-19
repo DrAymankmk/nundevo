@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\AdminPanel;
 
 use App\Http\Controllers\Controller;
-use App\Services\ClinicModuleService;
+use App\Services\ModuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -16,7 +16,7 @@ class LoginController extends Controller
         return view('login');
     }
 
-    public function login(Request $request, ClinicModuleService $modules)
+    public function login(Request $request, ModuleService $modules)
     {
         $credential = array('email' => $request->email, 'password' => $request->password);
         if ($user = Auth::attempt($credential)) {
